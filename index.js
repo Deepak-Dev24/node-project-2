@@ -5,8 +5,16 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+<<<<<<< HEAD
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/yourDatabaseName', {
+=======
+const mongoHost = process.env.MONGO_HOST || 'localhost';
+const mongoPort = process.env.MONGO_PORT || '27017';
+
+// Connect to MongoDB
+mongoose.connect(`mongodb://${mongoHost}:${mongoPort}/yourDatabaseName`, {
+>>>>>>> 1f0af3e (updated version)
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
