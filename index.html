@@ -1,36 +1,118 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Email App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-
 <body>
-    <h1>Email App</h1>
-    <form action="/add-email" method="post">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <button type="submit">Submit</button>
-    </form>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <div class="d-flex align-items-center">
+            <a class="navbar-brand m-0" href="#">Demo App</a>
+            <div class="navbar-nav ms-2">
+                <a class="nav-link active" href="/">Home</a>
+                <a class="nav-link" href="/about">About</a>
+                <a class="nav-link" href="/contact">Contact</a>
+            </div>
+        </div>
+    </nav>
 
-    <hr>
+    <div class="container mt-4">
+        <h2>Enter Details</h2>
+        <form id="userForm" class="row g-3">
+            <div class="col-4">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="email" class="form-control" required>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" id="phone" class="form-control" required>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary px-5">Submit</button>
+            </div>
+        </form>
 
-    <h2>Stored Emails:</h2>
-    <ul id="emails"></ul>
+        <hr>
+
+        <h2>Stored Users</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>S.N</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+        </table>
+    </div>
 
     <script>
-        fetch('/emails')
-            .then(response => response.json())
-            .then(emails => {
-                const emailsList = document.getElementById('emails');
-                emails.forEach(email => {
-                    const li = document.createElement('li');
-                    li.textContent = email.email;
-                    emailsList.appendChild(li);
-                });
+        document.getElementById('userForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+
+            fetch('/add-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             })
-            .catch(error => console.error('Error fetching emails:', error));
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                fetchUsers();
+                document.getElementById('userForm').reset();
+            })
+            .catch(error => console.error('Error adding user:', error));
+        });
+
+        function fetchUsers() {
+            fetch('/users')
+                .then(response => response.json())
+                .then(users => {
+                    const userTable = document.getElementById('userTable');
+                    userTable.innerHTML = "";
+                    users.forEach((user, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user._id}')">Delete</button>
+                            </td>
+                        `;
+                        userTable.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching users:', error));
+        }
+
+        function deleteUser(id) {
+            fetch(`/delete-user/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    fetchUsers();
+                })
+                .catch(error => console.error('Error deleting user:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchUsers);
     </script>
 </body>
-
 </html>
